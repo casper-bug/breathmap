@@ -36,7 +36,7 @@ For questions or support, please contact us at:
 - Website: [https://breathmap.site](https://breathmap.site)
 
 ## Acknowledgments
-
+- Claude Sonnet 3.7 
 - Thanks to all open-source projects that made this possible
 - Special thanks to our data providers and contributors
 
