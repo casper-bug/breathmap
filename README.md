@@ -7,11 +7,10 @@ BreathMap is a web application that provides real-time air quality monitoring an
 ## Features
 
 - 🌍 Real-time air quality index (AQI) visualization
-- 📊 Historical data trends and analytics
-- 🔔 Customizable alerts for poor air quality
+- 📊 Historical data trends and analytics (soon)
 - 📱 Responsive design for all devices
 - 🗺️ Interactive map interface
-- 🌦️ Weather integration
+- 🌦️ Weather integration (soon)
 
 ## Technologies Used
 
