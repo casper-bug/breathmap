@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-velocity/2.0.1/leaflet.velocity.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -119,6 +120,26 @@
             background-color: #d50000;
             color: white;
         }
+        .leaflet-velocity-layer {
+            opacity: 0.8;
+        }
+        .wind-control {
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            z-index: 1000;
+        }
+        .wind-toggle {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .wind-toggle:hover {
+            background-color: #e64a19;
+        }
     </style>
 </head>
 <body>
@@ -131,9 +152,11 @@
     <div class="bottom-bar">
         <span>BreathMap</span>
         <button class="about-button" onclick="location.href='about.html'">About</button>
+        <button id="toggleWind" class="wind-toggle">Toggle Wind</button>
     </div>
+
     <script>
-        let map, heat, markersLayer, cache = new Map();
+        let map, heat, markersLayer, windLayer, cache = new Map();
         const loader = document.getElementById('loader');
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
@@ -181,6 +204,25 @@
                     });
                 }
             }).addTo(map);
+
+            windLayer = L.velocityLayer({
+                displayValues: true,
+                velocityScale: 0.01,
+                colorScale: [
+                    { value: 0, color: "#ffffff" },
+                    { value: 5, color: "#87CEEB" },
+                    { value: 10, color: "#4682B4" },
+                    { value: 15, color: "#4169E1" }
+                ]
+            });
+
+            document.getElementById('toggleWind').addEventListener('click', () => {
+                if (map.hasLayer(windLayer)) {
+                    map.removeLayer(windLayer);
+                } else {
+                    map.addLayer(windLayer);
+                }
+            });
         }
 
         async function fetchData(apiUrl) {
@@ -204,85 +246,71 @@
                 [-85, -180, 0, 0],
                 [-85, 0, 0, 180],
                 [0, -180, 85, 0],
-                [0, 0, 85, 180],
+                [0, 0, 85, 180]
             ];
 
             const heatPoints = [];
+            let windData = [];
             markersLayer.clearLayers();
 
             for (const bounds of boundsList) {
                 const [south, west, north, east] = bounds;
                 const apiUrl = `https://api.waqi.info/map/bounds/?latlng=${south},${west},${north},${east}&token=b4e61d40c7efcf81d2b8bb699d3138da26603d1e`;
-                const data = await fetchData(apiUrl);
+                
+                try {
+                    const response = await fetchData(apiUrl);
+                    
+                    if (!response || !response.data) continue;
 
-                if (!data || !data.data) {
-                    console.error(`No data returned for bounds: ${bounds}`);
-                    continue;
-                }
+                    const windPoints = response.data.map(station => ({
+                        lat: station.lat,
+                        lon: station.lon,
+                        wind_speed: station.wind.speed,
+                        wind_direction: station.wind.direction
+                    }));
 
-                data.data.forEach(station => {
-                    if (station.lat && station.lon) {
-                        const aqi = parseInt(station.aqi);
-                        const isValidAqi = !isNaN(aqi) && aqi >= 0;
+                    windData = [...windData, ...windPoints];
 
-                        if (isValidAqi) {
-                            heatPoints.push([station.lat, station.lon, aqi / 500]);
+                    response.data.forEach(station => {
+                        if (station.lat && station.lon) {
+                            const aqi = parseInt(station.aqi);
+                            const isValidAqi = !isNaN(aqi) && aqi >= 0;
+
+                            if (isValidAqi) {
+                                heatPoints.push([station.lat, station.lon, aqi / 500]);
+                            }
+
+                            const marker = L.circleMarker([station.lat, station.lon], {
+                                radius: 6,
+                                fillColor: isValidAqi ? getAqiColor(aqi) : '#888888',
+                                color: isValidAqi ? "#ffffff" : "#666666",
+                                weight: 1,
+                                opacity: 1,
+                                fillOpacity: isValidAqi ? 0.8 : 0.5
+                            }).bindPopup(`
+                                <strong>Station:</strong> ${station.station.name || 'N/A'}<br>
+                                <strong>AQI:</strong> ${isValidAqi ? aqi : 'N/A'}<br>
+                                <strong>Wind Speed:</strong> ${station.wind.speed || 'N/A'} m/s<br>
+                                <strong>Wind Direction:</strong> ${station.wind.direction || 'N/A'}°
+                            `);
+
+                            markersLayer.addLayer(marker);
                         }
-
-                        const marker = L.circleMarker([station.lat, station.lon], {
-                            radius: 6,
-                            fillColor: isValidAqi ? getAqiColor(aqi) : '#888888',
-                            color: isValidAqi ? "#ffffff" : "#666666",
-                            weight: 1,
-                            opacity: 1,
-                            fillOpacity: isValidAqi ? 0.8 : 0.5
-                        }).bindPopup(`
-                            <strong>Station:</strong> ${station.station.name || 'N/A'}<br>
-                            <strong>AQI:</strong> ${isValidAqi ? aqi : 'N/A'}
-                        `);
-
-                        markersLayer.addLayer(marker);
-                    }
-                });
+                    });
+                } catch (error) {
+                    console.error(`Error fetching wind data for bounds ${bounds}:`, error);
+                }
             }
 
             if (heatPoints.length > 0) {
                 heat.setLatLngs(heatPoints);
-            } else {
-                console.warn("No valid heatmap points available");
+            }
+
+            if (windData.length > 0) {
+                windLayer.setData(windData);
             }
 
             map.addLayer(markersLayer);
-        }
-
-        async function searchLocation(query) {
-            const geocodeData = await fetchData(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json`);
-            if (!geocodeData || geocodeData.length === 0) {
-                alert("Location not found. Please try again.");
-                return;
-            }
-
-            const { lat, lon } = geocodeData[0];
-            const reverseData = await fetchData(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-            const locationName = reverseData?.display_name || query;
-
-            const aqiData = await fetchData(`https://api.waqi.info/feed/geo:${lat};${lon}/?token=b4e61d40c7efcf81d2b8bb699d3138da26603d1e`);
-            const aqi = parseInt(aqiData?.data?.aqi);
-            const isValidAqi = !isNaN(aqi) && aqi >= 0;
-
-            if (searchMarker) {
-                map.removeLayer(searchMarker);
-            }
-
-            searchMarker = L.marker([lat, lon])
-                .bindPopup(`
-                    <strong>Location:</strong> ${locationName}<br>
-                    <strong>AQI:</strong> ${isValidAqi ? aqi : 'N/A'}
-                `)
-                .addTo(map);
-
-            map.setView([lat, lon], 10);
-            searchMarker.openPopup();
         }
 
         function getAqiColor(aqi) {
