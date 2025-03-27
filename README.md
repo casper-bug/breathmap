@@ -31,7 +31,7 @@ BreathMap is a web application that provides real-time air quality monitoring an
 ## Contact
 
 For questions or support, please contact us at:
-- Email: contact@breathmap.site
+- Email: breathmap@proton.me
 - Website: [https://breathmap.site](https://breathmap.site)
 
 ## Acknowledgments
