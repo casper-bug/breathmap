@@ -146,9 +146,17 @@
             margin-right: 8px;
             border: 1px solid #666;
         }
-        /* Legend positioning for all devices */
-        .leaflet-bottom.leaflet-right {
-            bottom: 50px !important;
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .leaflet-bottom.leaflet-right {
+                bottom: 45px !important;
+            }
+        }
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .leaflet-bottom.leaflet-right {
+                bottom: 50px !important;
+            }
         }
     </style>
 </head>
