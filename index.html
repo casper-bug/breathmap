@@ -119,7 +119,7 @@
             background-color: #d50000;
             color: white;
         }
-        /* Legend styles */
+        /* Legend styles - Desktop */
         .legend {
             background: #1e1e1e;
             padding: 10px;
@@ -128,7 +128,7 @@
             color: white;
             font-family: 'Roboto Mono', monospace;
             font-size: 12px;
-            margin-bottom: 50px;
+            line-height: 1.4;
         }
         .legend h4 {
             margin: 0 0 8px;
@@ -147,7 +147,12 @@
             margin-right: 8px;
             border: 1px solid #666;
         }
-        /* Responsive adjustments */
+        /* Desktop positioning */
+        .leaflet-bottom.leaflet-right {
+            bottom: 60px !important;
+            right: 10px !important;
+        }
+        /* Mobile styles */
         @media (max-width: 768px) {
             .search-bar {
                 width: 150px;
@@ -155,12 +160,22 @@
                 top: 5px;
             }
             .legend {
-                font-size: 11px;
+                font-size: 10px;
                 padding: 8px;
-                margin-bottom: 45px;
+                max-width: 110px;
             }
             .legend h4 {
-                font-size: 13px;
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+            .legend span {
+                width: 12px;
+                height: 12px;
+                margin-right: 6px;
+            }
+            /* Mobile positioning - higher up */
+            .leaflet-bottom.leaflet-right {
+                bottom: 70px !important;
             }
         }
         @media (max-width: 480px) {
@@ -173,17 +188,13 @@
                 font-size: 14px;
             }
             .legend {
-                max-width: 120px;
-                margin-bottom: 50px;
+                max-width: 100px;
+                font-size: 9px;
+                padding: 6px;
             }
-        }
-        /* Fix for Leaflet control positioning */
-        .leaflet-bottom.leaflet-right {
-            bottom: 50px !important;
-            right: 10px !important;
-        }
-        .leaflet-bottom.leaflet-left {
-            bottom: 50px !important;
+            .legend h4 {
+                font-size: 11px;
+            }
         }
     </style>
 </head>
@@ -249,7 +260,7 @@
                 }
             }).addTo(map);
 
-            // Add legend with dynamic positioning
+            // Add legend with proper positioning
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function() {
                 const div = L.DomUtil.create('div', 'legend');
