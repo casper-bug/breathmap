@@ -146,16 +146,21 @@
             margin-right: 8px;
             border: 1px solid #666;
         }
-        /* Desktop styles */
-        @media (min-width: 769px) {
-            .leaflet-bottom.leaflet-right {
-                bottom: 45px !important;
-            }
+        /* Legend positioning - works for all browsers including Kiwi */
+        .leaflet-bottom.leaflet-right {
+            bottom: 60px !important; /* Increased from 50px to ensure clearance */
         }
-        /* Mobile styles */
+        /* Mobile-specific adjustments */
         @media (max-width: 768px) {
             .leaflet-bottom.leaflet-right {
-                bottom: 50px !important;
+                bottom: 65px !important; /* Extra space for mobile browsers */
+            }
+            .legend {
+                font-size: 11px;
+                padding: 8px;
+            }
+            .legend h4 {
+                font-size: 13px;
             }
         }
     </style>
@@ -222,7 +227,7 @@
                 }
             }).addTo(map);
 
-            // Add legend
+            // Add legend with dynamic positioning
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function() {
                 const div = L.DomUtil.create('div', 'legend');
