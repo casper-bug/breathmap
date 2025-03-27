@@ -128,7 +128,7 @@
             color: white;
             font-family: 'Roboto Mono', monospace;
             font-size: 12px;
-            margin-bottom: 50px; /* Added to prevent overlap with bottom bar */
+            margin-bottom: 50px;
         }
         .legend h4 {
             margin: 0 0 8px;
@@ -157,7 +157,7 @@
             .legend {
                 font-size: 11px;
                 padding: 8px;
-                margin-bottom: 55px; /* Slightly more space on mobile */
+                margin-bottom: 45px;
             }
             .legend h4 {
                 font-size: 13px;
@@ -173,8 +173,17 @@
                 font-size: 14px;
             }
             .legend {
-                margin-bottom: 60px; /* Extra space for very small screens */
+                max-width: 120px;
+                margin-bottom: 50px;
             }
+        }
+        /* Fix for Leaflet control positioning */
+        .leaflet-bottom.leaflet-right {
+            bottom: 50px !important;
+            right: 10px !important;
+        }
+        .leaflet-bottom.leaflet-left {
+            bottom: 50px !important;
         }
     </style>
 </head>
@@ -386,13 +395,6 @@
             searchButton.addEventListener('click', () => {
                 const query = searchInput.value.trim();
                 if (query) searchLocation(query);
-            });
-
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const query = searchInput.value.trim();
-                    if (query) searchLocation(query);
-                }
             });
         });
     </script>
