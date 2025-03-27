@@ -21,7 +21,7 @@
             font-family: 'Roboto Mono', monospace;
         }
         #map {
-            height: calc(100vh - 40px);
+            height: calc(100vh - 80px);
             width: 100vw;
         }
         .leaflet-container {
@@ -74,7 +74,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 40px;
+            height: 80px;
             background-color: #1e1e1e;
             display: flex;
             align-items: center;
@@ -119,81 +119,95 @@
             background-color: #d50000;
             color: white;
         }
-        /* Legend styles - Desktop */
         .legend {
-            background: #1e1e1e;
+            position: absolute;
+            bottom: 85px;
+            right: 10px;
+            z-index: 1000;
+            background-color: #2c2c2c;
             padding: 10px;
             border-radius: 5px;
-            border: 1px solid #444;
-            color: white;
-            font-family: 'Roboto Mono', monospace;
+            border: 1px solid #444444;
             font-size: 12px;
-            line-height: 1.4;
+            max-width: 200px;
         }
-        .legend h4 {
-            margin: 0 0 8px;
-            font-size: 14px;
+        .legend-title {
+            margin-bottom: 8px;
             font-weight: bold;
+            text-align: center;
         }
-        .legend div {
+        .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
-        .legend span {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
+        .legend-color {
+            width: 20px;
+            height: 20px;
             margin-right: 8px;
-            border: 1px solid #666;
+            border-radius: 3px;
         }
-        /* Desktop positioning */
-        .leaflet-bottom.leaflet-right {
-            bottom: 60px !important;
-            right: 10px !important;
+        .legend-label {
+            flex: 1;
         }
-        /* Mobile styles */
+        .bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 15px;
+        }
+        .app-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             .search-bar {
                 width: 150px;
-                right: 5px;
-                top: 5px;
             }
             .legend {
+                bottom: 90px;
+                right: 5px;
                 font-size: 10px;
-                padding: 8px;
-                max-width: 110px;
+                max-width: 150px;
             }
-            .legend h4 {
-                font-size: 12px;
-                margin-bottom: 6px;
+            .legend-color {
+                width: 15px;
+                height: 15px;
             }
-            .legend span {
-                width: 12px;
-                height: 12px;
-                margin-right: 6px;
-            }
-            /* Mobile positioning - higher up */
-            .leaflet-bottom.leaflet-right {
-                bottom: 70px !important;
-            }
-        }
-        @media (max-width: 480px) {
-            .search-bar {
-                width: 130px;
-            }
-            .search-bar input,
-            .search-bar button {
-                padding: 6px;
+            .bottom-bar {
+                height: 70px;
                 font-size: 14px;
             }
-            .legend {
-                max-width: 100px;
-                font-size: 9px;
-                padding: 6px;
+            .app-title {
+                font-size: 16px;
             }
-            .legend h4 {
-                font-size: 11px;
+        }
+
+        @media (max-width: 480px) {
+            .search-bar {
+                width: 120px;
+            }
+            .legend {
+                bottom: 75px;
+                font-size: 9px;
+                max-width: 120px;
+                padding: 5px;
+            }
+            .legend-title {
+                margin-bottom: 5px;
+            }
+            .bottom-bar {
+                height: 60px;
+                font-size: 12px;
+            }
+            .app-title {
+                font-size: 14px;
+            }
+            .about-button {
+                padding: 3px 6px;
+                font-size: 10px;
             }
         }
     </style>
@@ -205,9 +219,36 @@
         <button id="search-button">Search</button>
     </div>
     <div id="map"></div>
+    
+    <div class="legend">
+        <div class="legend-title">AQI Levels</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #00e676;"></div>
+            <div class="legend-label">Good (0-50)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ffeb3b;"></div>
+            <div class="legend-label">Moderate (51-100)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ff9800;"></div>
+            <div class="legend-label">Unhealthy for Sensitive Groups (101-150)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ff5722;"></div>
+            <div class="legend-label">Unhealthy (151-200)</div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #d50000;"></div>
+            <div class="legend-label">Very Unhealthy (201+)</div>
+        </div>
+    </div>
+    
     <div class="bottom-bar">
-        <span>BreathMap</span>
-        <button class="about-button" onclick="location.href='about.html'">About</button>
+        <div class="bottom-content">
+            <span class="app-title">BreathMap</span>
+            <button class="about-button" onclick="location.href='about.html'">About</button>
+        </div>
     </div>
     <script>
         let map, heat, markersLayer, cache = new Map();
@@ -215,7 +256,6 @@
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
         let searchMarker = null;
-        let updateInterval;
 
         function initializeMap(center) {
             map = L.map('map', {
@@ -259,28 +299,6 @@
                     });
                 }
             }).addTo(map);
-
-            // Add legend with proper positioning
-            const legend = L.control({position: 'bottomright'});
-            legend.onAdd = function() {
-                const div = L.DomUtil.create('div', 'legend');
-                div.innerHTML = `
-                    <h4>AQI Scale</h4>
-                    <div><span style="background:#00e676"></span>0-50 (Good)</div>
-                    <div><span style="background:#ffeb3b"></span>51-100 (Moderate)</div>
-                    <div><span style="background:#ff9800"></span>101-150 (Unhealthy for Sensitive)</div>
-                    <div><span style="background:#ff5722"></span>151-200 (Unhealthy)</div>
-                    <div><span style="background:#d50000"></span>201+ (Very Unhealthy)</div>
-                `;
-                return div;
-            };
-            legend.addTo(map);
-
-            // Mobile detection
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                map.touchZoom.enable();
-                map.doubleClickZoom.disable();
-            }
         }
 
         async function fetchData(apiUrl) {
@@ -393,15 +411,9 @@
             return "#d50000";
         }
 
-        function setAutoUpdate(minutes) {
-            clearInterval(updateInterval);
-            updateInterval = setInterval(updateMapData, minutes * 60 * 1000);
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             initializeMap([20, 0]);
             updateMapData();
-            setAutoUpdate(30); // Auto-update every 30 minutes
 
             searchButton.addEventListener('click', () => {
                 const query = searchInput.value.trim();
