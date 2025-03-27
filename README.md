@@ -1,5 +1,7 @@
 # BreathMap - Real-time Air Quality Monitoring
-![banner](banner.png)
+<div align="left">
+  <img src="banner.png" width="400">
+</div>
 ## Overview
 
 BreathMap is a web application that provides real-time air quality monitoring and visualization. The platform aggregates data from various environmental sensors to give users up-to-date information about air pollution levels in their area.
