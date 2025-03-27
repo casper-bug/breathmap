@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -119,7 +119,7 @@
             background-color: #d50000;
             color: white;
         }
-        /* New legend styles */
+        /* Updated legend styles with mobile fix */
         .legend {
             background: #1e1e1e;
             padding: 10px;
@@ -145,6 +145,12 @@
             height: 15px;
             margin-right: 8px;
             border: 1px solid #666;
+        }
+        /* Mobile-specific legend positioning */
+        @media (max-width: 768px) {
+            .leaflet-bottom.leaflet-right {
+                bottom: 50px !important;
+            }
         }
         /* Mobile notification */
         .mobile-notification {
